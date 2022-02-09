@@ -10,11 +10,16 @@ import {
   Snackbar,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
+import { useMutation } from "@apollo/client";
 import logo from "../../img/logo.png";
 import Vector from "../../img/Vector.png";
+import { SIGN_UP } from "../../request/userRequest";
+
 import "../LoginRegist.scss";
 
 const Registration = () => {
+  const [singUp, { data }] = useMutation(SIGN_UP);
+
   const [dataLogin, dataLoginEdit] = useState({
     login: "",
     password: "",
@@ -38,14 +43,7 @@ const Registration = () => {
   };
 
   const Alert = React.forwardRef((props, ref) => {
-    return (
-      <MuiAlert
-        elevation={6}
-        ref={ref}
-        variant="filled"
-        {...props}
-      />
-    );
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
 
   const state = {
@@ -56,9 +54,6 @@ const Registration = () => {
   const { message, status } = snackbar;
   const { vertical, horizontal } = state;
   const { login, password, rePassword } = dataLogin;
-
-  const passwordRegular = password.match(/^(?=.*\d)[a-z\d]{6,}$/gi);
-  const loginRegular = login.match(/^[a-z\d]{6,}$/gi);
 
   const messageWarPassword = `Длина пароля не меньше 6 символов. 
   Все символы латинского алфавита.Пароль должен содержать обязательно 
@@ -75,49 +70,42 @@ const Registration = () => {
   };
 
   const loginSystem = async () => {
-    if (loginRegular) {
-      if (passwordRegular) {
-        if (password === rePassword) {
-          await axios
-            .post("http://localhost:8000/user/addNewUser", {
-              login: login.trim(),
-              password: password.trim(),
-            })
-            .then((results) => {
-              localStorage.setItem("token", results.data.data.token);
-              navigation("/main");
-            })
-            .catch((err) => {
-              dataLoginEdit({
-                login: "",
-                password: "",
-                rePassword: "",
-              });
-              snackbarParams("Логин занят!!!", "error");
-            });
-        } else {
-          dataLoginEdit({
-            login,
-            password,
-            rePassword: "",
-          });
-          snackbarParams("Пароли не совпадают!", "warning");
-        }
-      } else {
-        dataLoginEdit({
-          login,
+    const errorStatus = {
+      status: "error",
+      cleanForm: { login: "", password: "", rePassword: "" },
+    };
+    try {
+      if (!login.match(/^[a-z\d]{6,}$/gi)) {
+        errorStatus.status = "warning";
+        errorStatus.cleanForm = {
+          login: "",
+        };
+        throw new Error(messageWarLogin);
+      }
+      if (!password.match(/^(?=.*\d)[a-z\d]{6,}$/gi)) {
+        errorStatus.status = "warning";
+        errorStatus.cleanForm = {
           password: "",
           rePassword: "",
-        });
-        snackbarParams(messageWarPassword, "warning");
+        };
+        throw new Error(messageWarPassword);
       }
-    } else {
+      if (!(password === rePassword)) {
+        errorStatus.status = "warning";
+        errorStatus.cleanForm = {
+          rePassword: "",
+        };
+        throw new Error("Пароли не совпадают!");
+      }
+
+      await singUp({ variables: { input: { login, password } } });
+    } catch (err) {
+      console.log(err);
       dataLoginEdit({
-        login: "",
-        password,
-        rePassword,
+        ...dataLogin,
+        ...errorStatus.cleanForm,
       });
-      snackbarParams(messageWarLogin, "warning");
+      snackbarParams(err.message, errorStatus.status);
     }
   };
 
@@ -128,11 +116,7 @@ const Registration = () => {
         <h1>Зарегистрироваться в системе</h1>
       </AppBar>
       <Container className="container-style">
-        <img
-          src={Vector}
-          alt="Vector"
-          className="img-vector"
-        />
+        <img src={Vector} alt="Vector" className="img-vector" />
         <Box className="box-style">
           <div className="group-login">
             <h1>Регистрация</h1>
@@ -203,11 +187,7 @@ const Registration = () => {
         autoHideDuration={10000}
         onClose={handleClose}
       >
-        <Alert
-          onClose={handleClose}
-          severity={status}
-          className="alert-style"
-        >
+        <Alert onClose={handleClose} severity={status} className="alert-style">
           {message}
         </Alert>
       </Snackbar>

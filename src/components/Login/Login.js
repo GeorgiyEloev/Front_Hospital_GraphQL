@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   AppBar,
   Box,
@@ -9,12 +8,16 @@ import {
   Button,
   Snackbar,
 } from "@mui/material";
+import { useMutation } from "@apollo/client";
 import MuiAlert from "@mui/material/Alert";
 import logo from "../../img/logo.png";
 import Vector from "../../img/Vector.png";
+import { SIGN_IN } from "../../request/userRequest";
 import "../LoginRegist.scss";
 
 const Login = () => {
+  const [singIn, { data }] = useMutation(SIGN_IN);
+
   const [dataLogin, dataLoginEdit] = useState({
     login: "",
     password: "",
@@ -28,6 +31,13 @@ const Login = () => {
 
   const navigation = useNavigate();
 
+  useEffect(() => {
+    if (data) {
+      localStorage.setItem("token", `Bearer ${data.authorizationUser.token}`);
+      navigation("/main");
+    }
+  }, [data, navigation]);
+
   const handleClick = () => {
     setOpen(true);
   };
@@ -37,14 +47,7 @@ const Login = () => {
   };
 
   const Alert = React.forwardRef((props, ref) => {
-    return (
-      <MuiAlert
-        elevation={6}
-        ref={ref}
-        variant="filled"
-        {...props}
-      />
-    );
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
 
   const state = {
@@ -56,27 +59,20 @@ const Login = () => {
   const { vertical, horizontal } = state;
   const { login, password } = dataLogin;
 
-  const loginSystem = async () => {
-    await axios
-      .post("http://localhost:8000/user/authorizationUser", {
-        login: login.trim(),
-        password: password.trim(),
-      })
-      .then((results) => {
-        localStorage.setItem("token", results.data.data.token);
-        navigation("/main");
-      })
-      .catch((err) => {
-        setSnackbar({
-          message: "Неверный логин или пароль!!!",
-          status: "error",
-        });
-        dataLoginEdit({
-          login: "",
-          password: "",
-        });
-        handleClick();
+  const loginSystem = async (login, password) => {
+    try {
+      await singIn({ variables: { input: { ...dataLogin } } });
+    } catch (err) {
+      setSnackbar({
+        message: err.message,
+        status: "error",
       });
+      dataLoginEdit({
+        login: "",
+        password: "",
+      });
+      handleClick();
+    }
   };
 
   return (
@@ -86,11 +82,7 @@ const Login = () => {
         <h1>Войти в систему</h1>
       </AppBar>
       <Container className="container-style">
-        <img
-          src={Vector}
-          alt="Vector"
-          className="img-vector"
-        />
+        <img src={Vector} alt="Vector" className="img-vector" />
         <Box className="box-style">
           <div className="group-login">
             <h1>Войти в систему</h1>
@@ -144,11 +136,7 @@ const Login = () => {
         autoHideDuration={10000}
         onClose={handleClose}
       >
-        <Alert
-          onClose={handleClose}
-          severity={status}
-          className="alert-style"
-        >
+        <Alert onClose={handleClose} severity={status} className="alert-style">
           {message}
         </Alert>
       </Snackbar>
