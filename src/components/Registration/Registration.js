@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   AppBar,
   Box,
@@ -33,6 +32,13 @@ const Registration = () => {
   });
 
   const navigation = useNavigate();
+
+  useEffect(() => {
+    if (data) {
+      localStorage.setItem("token", `Bearer ${data.addNewUser.token}`);
+      navigation("/main");
+    }
+  }, [data, navigation]);
 
   const handleClick = () => {
     setOpen(true);
@@ -69,34 +75,38 @@ const Registration = () => {
     handleClick();
   };
 
+  const checkPasswordAndLogin = (errorStatus) => {
+    if (!login.match(/^[a-z\d]{6,}$/gi)) {
+      errorStatus.status = "warning";
+      errorStatus.cleanForm = {
+        login: "",
+      };
+      throw new Error(messageWarLogin);
+    }
+    if (!password.match(/^(?=.*\d)[a-z\d]{6,}$/gi)) {
+      errorStatus.status = "warning";
+      errorStatus.cleanForm = {
+        password: "",
+        rePassword: "",
+      };
+      throw new Error(messageWarPassword);
+    }
+    if (!(password === rePassword)) {
+      errorStatus.status = "warning";
+      errorStatus.cleanForm = {
+        rePassword: "",
+      };
+      throw new Error("Пароли не совпадают!");
+    }
+  };
+
   const loginSystem = async () => {
     const errorStatus = {
       status: "error",
       cleanForm: { login: "", password: "", rePassword: "" },
     };
     try {
-      if (!login.match(/^[a-z\d]{6,}$/gi)) {
-        errorStatus.status = "warning";
-        errorStatus.cleanForm = {
-          login: "",
-        };
-        throw new Error(messageWarLogin);
-      }
-      if (!password.match(/^(?=.*\d)[a-z\d]{6,}$/gi)) {
-        errorStatus.status = "warning";
-        errorStatus.cleanForm = {
-          password: "",
-          rePassword: "",
-        };
-        throw new Error(messageWarPassword);
-      }
-      if (!(password === rePassword)) {
-        errorStatus.status = "warning";
-        errorStatus.cleanForm = {
-          rePassword: "",
-        };
-        throw new Error("Пароли не совпадают!");
-      }
+      checkPasswordAndLogin(errorStatus);
 
       await singUp({ variables: { input: { login, password } } });
     } catch (err) {

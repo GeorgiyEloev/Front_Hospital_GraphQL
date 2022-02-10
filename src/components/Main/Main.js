@@ -2,14 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import moment from "moment";
-import {
-  AppBar,
-  TextField,
-  Button,
-  MenuItem,
-  Select,
-} from "@mui/material";
+import { useQuery } from "@apollo/client";
+import { AppBar, TextField, Button, MenuItem, Select } from "@mui/material";
 import DateInput from "./DateInput";
+import { GET_ALL_RECORDS } from "../../request/recordRequest";
 import TableRecords from "../TableRecords/TableRecords";
 import FilterComponent from "../FilterComponent/FilterComponent";
 import SnackbarComponent from "../SnackbarComponent/SnackbarComponent";
@@ -17,10 +13,12 @@ import logo from "../../img/logo.png";
 import "./Main.scss";
 
 const Main = () => {
+  const { loading, error, data } = useQuery(GET_ALL_RECORDS);
+
   const [filterRecords, setFilter] = useState([]);
   const [allRecords, setAllRecords] = useState([]);
 
-  const [directionCheck, setdirectionCheck] = useState({
+  const [directionCheck, setDirectionCheck] = useState({
     sortClassName: "sort-hidden",
     directValue: "asc",
   });
@@ -56,30 +54,33 @@ const Main = () => {
   };
 
   const uploadAllRecords = async () => {
-    await axios
-      .get("http://localhost:8000/record/allRecord", {
-        headers: { authorization: token },
-      })
-      .then((res) => {
-        setAllRecords(res.data.data);
-      })
-      .catch((err) => {
-        if (err.response.status === 401) {
-          snackbarParams("Ошибка авторизации!!!", "error", true);
-        } else {
-          snackbarParams(
-            "Ошибка чтения записей! Обновите страницу!!!!",
-            "warning",
-            false
-          );
-        }
-      });
+    // await axios
+    //   .get("http://localhost:8000/record/allRecord", {
+    //     headers: { authorization: token },
+    //   })
+    //   .then((res) => {
+    //     setAllRecords(res.data.data);
+    //   })
+    //   .catch((err) => {
+    //     if (err.response.status === 401) {
+    //       snackbarParams("Ошибка авторизации!!!", "error", true);
+    //     } else {
+    //       snackbarParams(
+    //         "Ошибка чтения записей! Обновите страницу!!!!",
+    //         "warning",
+    //         false
+    //       );
+    //     }
+    //   });
   };
 
   useEffect(() => {
-    uploadAllRecords();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation]);
+    if (!error && data) {
+      setAllRecords(data.getAllRecords);
+    } else if (error) {
+      snackbarParams(error.message, "error", true);
+    }
+  }, [data, error]);
 
   const snackbarParams = (message, status, errorToken) => {
     setSnackbar({
@@ -125,7 +126,7 @@ const Main = () => {
                   symptoms: "",
                 });
                 setValue("_id");
-                setdirectionCheck({
+                setDirectionCheck({
                   sortClassName: "sort-hidden",
                   directValue: "asc",
                 });
@@ -297,13 +298,13 @@ const Main = () => {
             onChange={(event) => {
               setValue(event.target.value);
               if (event.target.value !== "_id") {
-                setdirectionCheck({
+                setDirectionCheck({
                   sortClassName: "sort",
                   directValue,
                 });
                 sortAllRecords(event.target.value, directValue);
               } else {
-                setdirectionCheck({
+                setDirectionCheck({
                   sortClassName: "sort-hidden",
                   directValue: "asc",
                 });
@@ -333,7 +334,7 @@ const Main = () => {
             className="input-sort"
             value={directValue}
             onChange={(event) => {
-              setdirectionCheck({
+              setDirectionCheck({
                 sortClassName,
                 directValue: event.target.value,
               });

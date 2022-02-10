@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import moment from "moment";
+import { format, fromUnixTime } from "date-fns";
+
 import {
   Table,
   TableBody,
@@ -39,6 +40,11 @@ const TableRecords = ({
 
   const headerNames = ["Имя", "Врач", "Дата", "Жалобы", ""];
 
+  allRecords.map((row) => {
+    console.log(fromUnixTime(row.date / 1000));
+    console.log(format(fromUnixTime(row.date / 1000), "MM"));
+  });
+
   return (
     <>
       <TableContainer component={Paper}>
@@ -62,7 +68,7 @@ const TableRecords = ({
                   {row.doctor}
                 </TableCell>
                 <TableCell className="cell-date" align="center">
-                  {moment(row.date).format("DD/MM/YYYY")}
+                  {fromUnixTime(row.date / 1000)}
                 </TableCell>
                 <TableCell className="cell-symptoms" align="justify">
                   {row.symptoms}
