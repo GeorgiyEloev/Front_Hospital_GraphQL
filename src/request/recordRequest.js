@@ -25,8 +25,8 @@ export const ADD_NEW_RECORD = gql`
 `;
 
 export const DELETE_RECORD = gql`
-  mutation ($id: ID!) {
-    removeRecord(_id: $id) {
+  mutation ($_id: ID!) {
+    removeRecord(_id: $_id) {
       _id
       patient
       doctor
