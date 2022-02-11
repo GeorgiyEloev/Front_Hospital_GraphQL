@@ -37,20 +37,6 @@ const FilterComponent = ({ allRecords, setFilter }) => {
     const dateLast = checkDate(maxDate)
       ? moment(maxDate).format("YYYY-MM-DD")
       : moment("12-31-2022").format("YYYY-MM-DD");
-    console.log(allRecords);
-    console.log("-------------------------------");
-    console.log(
-      allRecords.filter(
-        (record) =>
-          moment(fromUnixTime(record.date / 1000)).format("YYYY-MM-DD") >=
-            dateFirst &&
-          moment(fromUnixTime(record.date / 1000)).format("YYYY-MM-DD") <=
-            dateLast
-      )
-    );
-    console.log(
-      moment(fromUnixTime(allRecords[0].date / 1000)).format("YYYY-MM-DD")
-    );
     setFilter(
       allRecords.filter(
         (record) =>

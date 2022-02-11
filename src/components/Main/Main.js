@@ -2,15 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { AppBar, Button, MenuItem, Select } from "@mui/material";
-import { GET_ALL_RECORDS } from "../../request/recordRequest";
+import AddRecord from "../AddRecord/AddRecord";
 import TableRecords from "../TableRecords/TableRecords";
+import { GET_ALL_RECORDS } from "../../request/recordRequest";
 import FilterComponent from "../FilterComponent/FilterComponent";
 import SnackbarComponent from "../SnackbarComponent/SnackbarComponent";
 import logo from "../../img/logo.png";
 import "./Main.scss";
 
 const Main = () => {
-  const { loading, error, data } = useQuery(GET_ALL_RECORDS);
+  const { error, data } = useQuery(GET_ALL_RECORDS);
 
   const [allRecords, setAllRecords] = useState([]);
 
@@ -40,6 +41,7 @@ const Main = () => {
         snackbarParams(error.message, "warning", false);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, error]);
 
   const snackbarParams = (message, status, errorToken) => {
@@ -114,6 +116,12 @@ const Main = () => {
           Выход
         </Button>
       </AppBar>
+      <AddRecord
+        setAllRecords={setAllRecords}
+        snackbarParams={snackbarParams}
+        setValue={setValue}
+        setDirectionCheck={setDirectionCheck}
+      />
       <div className="sort-filter">
         <div className="sort">
           <p>Сортировать по:</p>

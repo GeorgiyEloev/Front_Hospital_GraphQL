@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import moment from "moment";
 import { useMutation } from "@apollo/client";
 import { AppBar, TextField, Button, MenuItem, Select } from "@mui/material";
-import DateInput from "./DateInput";
+import DateInput from "../Main/DateInput";
 import { ADD_NEW_RECORD } from "../../request/recordRequest";
 
 const AddRecord = ({
@@ -23,6 +21,34 @@ const AddRecord = ({
     symptoms: "",
   });
 
+  useEffect(() => {
+    if (data) {
+      setAllRecords([...data.addNewRecord]);
+      if (checkDate) {
+        snackbarParams(
+          "Запись сохранена! Но дата заменена на текущую!",
+          "warning",
+          false
+        );
+      } else {
+        snackbarParams("УДАЧА! Запись сохранена!", "success", false);
+      }
+      setNewRecord({
+        patient: "",
+        doctor: "",
+        date: new Date(),
+        symptoms: "",
+      });
+      setValue("_id");
+      setDirectionCheck({
+        sortClassName: "sort-hidden",
+        directValue: "asc",
+      });
+      setCheckDate(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
   const doctors = [
     "Кириллов Алан Валерьевич",
     "Комиссаров Гаянэ Валерьянович",
@@ -39,91 +65,41 @@ const AddRecord = ({
     if (patient === "") {
       throw new Error("Поле имени пацента пустое!");
     }
-    if (doctor !== "") {
+    if (doctor === "") {
       throw new Error("Не выбран врач!");
     }
-    if (symptoms !== "") {
+    if (symptoms === "") {
       throw new Error("Не указаны жалобы!");
     }
     if (
-      (new Date(date) <= new Date("01-01-2021") &&
-        new Date(date) >= new Date("12-31-2022")) ||
-      !checkDate
+      !(
+        (new Date(date) >= new Date("01-01-2021") &&
+          new Date(date) <= new Date("12-31-2022")) ||
+        checkDate
+      )
     ) {
       setCheckDate(true);
-      throw new Error("Не указаны жалобы!");
+      throw new Error(
+        "Не верная дата! Дата должна быть в диапазоне от 01/01/2021 до 31/12/2022"
+      );
     }
   };
 
   const addNewRecord = async () => {
-    const errorStatus = {
-      status: "warning",
-      token: false,
-    };
     try {
-      checkNewRecord();
       newRecord.date = moment(date).format("YYYY-MM-DD");
-    } catch (err) {}
-
-    //       if (
-    //         (new Date(date) >= new Date("01-01-2021") &&
-    //           new Date(date) <= new Date("12-31-2022")) ||
-    //         checkDate
-    //       ) {
-    //         if (checkDate) {
-    //           newRecord.date = moment().format("YYYY-MM-DD");
-    //         }
-    //         await axios
-    //           .post("http://localhost:8000/record/addNewRecord", newRecord, {})
-    //           .then((res) => {
-    //             setAllRecords(res.data.data);
-    //             if (checkDate) {
-    //               snackbarParams(
-    //                 "Запись сохранена! Но дата заменена на текущую!",
-    //                 "warning",
-    //                 false
-    //               );
-    //             } else {
-    //               snackbarParams("УДАЧА! Запись сохранена!", "success", false);
-    //             }
-    //             setNewRecord({
-    //               patient: "",
-    //               doctor: "",
-    //               date: new Date(),
-    //               symptoms: "",
-    //             });
-    //             setValue("_id");
-    //             setDirectionCheck({
-    //               sortClassName: "sort-hidden",
-    //               directValue: "asc",
-    //             });
-    //             setCheckDate(false);
-    //           })
-    //           .catch((err) => {
-    //             if (err.response.status === 401) {
-    //               snackbarParams("Ошибка авторизации!!!", "error", true);
-    //             } else {
-    //               snackbarParams(
-    //                 "Ошибка новой записи! Запись не сохранена!",
-    //                 "warning",
-    //                 false
-    //               );
-    //             }
-    //           });
-    //       } else {
-    //         setCheckDate(true);
-    //         snackbarParams(
-    //           "Не верная дата! Дата должна быть в диапазоне от 01/01/2021 до 31/12/2022",
-    //           "warning",
-    //           false
-    //         );
-    //       }
-    //     } else {
-    //     }
-    //   } else {
-    //   }
-    // } else {
-    // }
+      checkNewRecord();
+      if (checkDate) {
+        newRecord.date = moment().format("YYYY-MM-DD");
+      }
+      await addRecord({ variables: { input: { ...newRecord } } });
+    } catch (err) {
+      if (err.message === "Неправильный/Устаревший токен") {
+        snackbarParams(err.message, "error", true);
+      } else {
+        snackbarParams(err.message, "warning", false);
+      }
+    }
   };
 
   const handleChange = (nameKey, event) => {
