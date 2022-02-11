@@ -107,10 +107,8 @@ const Registration = () => {
     };
     try {
       checkPasswordAndLogin(errorStatus);
-
       await singUp({ variables: { input: { login, password } } });
     } catch (err) {
-      console.log(err);
       dataLoginEdit({
         ...dataLogin,
         ...errorStatus.cleanForm,

@@ -12,7 +12,7 @@ export const GET_ALL_RECORDS = gql`
   }
 `;
 
-export const ADD_NEW_RECORDS = gql`
+export const ADD_NEW_RECORD = gql`
   mutation ($input: RecordInput!) {
     addNewRecord(input: $input) {
       _id

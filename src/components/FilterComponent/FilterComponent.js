@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import moment from "moment";
+import { fromUnixTime } from "date-fns";
 import { Button } from "@mui/material";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -36,11 +37,27 @@ const FilterComponent = ({ allRecords, setFilter }) => {
     const dateLast = checkDate(maxDate)
       ? moment(maxDate).format("YYYY-MM-DD")
       : moment("12-31-2022").format("YYYY-MM-DD");
+    console.log(allRecords);
+    console.log("-------------------------------");
+    console.log(
+      allRecords.filter(
+        (record) =>
+          moment(fromUnixTime(record.date / 1000)).format("YYYY-MM-DD") >=
+            dateFirst &&
+          moment(fromUnixTime(record.date / 1000)).format("YYYY-MM-DD") <=
+            dateLast
+      )
+    );
+    console.log(
+      moment(fromUnixTime(allRecords[0].date / 1000)).format("YYYY-MM-DD")
+    );
     setFilter(
       allRecords.filter(
         (record) =>
-          moment(record.date).format("YYYY-MM-DD") >= dateFirst &&
-          moment(record.date).format("YYYY-MM-DD") <= dateLast
+          moment(fromUnixTime(record.date / 1000)).format("YYYY-MM-DD") >=
+            dateFirst &&
+          moment(fromUnixTime(record.date / 1000)).format("YYYY-MM-DD") <=
+            dateLast
       )
     );
   };
@@ -50,7 +67,7 @@ const FilterComponent = ({ allRecords, setFilter }) => {
       minDate: "",
       maxDate: "",
     });
-    setFilter([]);
+    setFilter(allRecords);
     setHidden({
       closeFilter: "filter",
       openFilter: "filter-hidden",
@@ -58,10 +75,10 @@ const FilterComponent = ({ allRecords, setFilter }) => {
     setOpen(false);
   };
 
-  const handleChange = (nameKey , event) => {
+  const handleChange = (nameKey, event) => {
     setDateFilter({
       ...dateFilter,
-      [nameKey] : event,
+      [nameKey]: event,
     });
   };
 
@@ -94,7 +111,7 @@ const FilterComponent = ({ allRecords, setFilter }) => {
               addClass="filter-date"
               defValue={minDate}
               nameKey="minDate"
-              handlChange={handleChange}
+              handleChange={handleChange}
             />
           </div>
           <div className="filter">
@@ -103,7 +120,7 @@ const FilterComponent = ({ allRecords, setFilter }) => {
               addClass="filter-date"
               defValue={maxDate}
               nameKey="maxDate"
-              handlChange={handleChange}
+              handleChange={handleChange}
             />
           </div>
           <div className="filter">

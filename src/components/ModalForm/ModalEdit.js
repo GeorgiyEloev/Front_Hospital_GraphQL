@@ -153,7 +153,7 @@ const ModalEdit = ({
                 addClass="input-mui"
                 defValue={date}
                 nameKey="date"
-                handlChange={handleChange}
+                handleChange={handleChange}
               />
             </div>
             <div className="group-input">

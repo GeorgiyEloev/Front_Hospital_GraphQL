@@ -4,7 +4,7 @@ import DesktopDatePicker from "@mui/lab/DesktopDatePicker";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 
-const DateInput = ({ defValue, nameKey, handlChange, addClass }) => {
+const DateInput = ({ defValue, nameKey, handleChange, addClass }) => {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <DesktopDatePicker
@@ -14,7 +14,7 @@ const DateInput = ({ defValue, nameKey, handlChange, addClass }) => {
         name="date"
         className={addClass}
         value={defValue}
-        onChange={(event) => handlChange(nameKey, event)}
+        onChange={(event) => handleChange(nameKey, event)}
         renderInput={(params) => <TextField {...params} className={addClass} />}
       />
     </LocalizationProvider>
