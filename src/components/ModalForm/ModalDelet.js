@@ -4,7 +4,7 @@ import { Box, AppBar } from "@mui/material";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import { DELETE_RECORD } from "../../request/recordRequest";
-import { WAR_LOGIN } from "../../constants/snackbarMessage";
+import {} from "../../constants/snackbarMessage";
 import "./ModalForm.scss";
 
 const ModalDelet = ({
