@@ -13,7 +13,11 @@ import { useMutation } from "@apollo/client";
 import logo from "../../img/logo.png";
 import Vector from "../../img/Vector.png";
 import { SIGN_UP } from "../../request/userRequest";
-
+import {
+  WAR_LOGIN,
+  WAR_PASSWORD,
+  PAS_NO_MATCHES,
+} from "../../constants/snackbarMessage";
 import "../LoginRegist.scss";
 
 const Registration = () => {
@@ -61,12 +65,6 @@ const Registration = () => {
   const { vertical, horizontal } = state;
   const { login, password, rePassword } = dataLogin;
 
-  const messageWarPassword = `Длина пароля не меньше 6 символов. 
-  Все символы латинского алфавита.Пароль должен содержать обязательно 
-  хотя бы одно число.!!!`;
-  const messageWarLogin = `Длина логина не меньше 6 символов. 
-  Все символы латинского алфавита или цифры!!!`;
-
   const snackbarParams = (message, status) => {
     setSnackbar({
       message,
@@ -81,7 +79,7 @@ const Registration = () => {
       errorStatus.cleanForm = {
         login: "",
       };
-      throw new Error(messageWarLogin);
+      throw new Error(WAR_LOGIN);
     }
     if (!password.match(/^(?=.*\d)[a-z\d]{6,}$/gi)) {
       errorStatus.status = "warning";
@@ -89,14 +87,14 @@ const Registration = () => {
         password: "",
         rePassword: "",
       };
-      throw new Error(messageWarPassword);
+      throw new Error(WAR_PASSWORD);
     }
     if (!(password === rePassword)) {
       errorStatus.status = "warning";
       errorStatus.cleanForm = {
         rePassword: "",
       };
-      throw new Error("Пароли не совпадают!");
+      throw new Error(PAS_NO_MATCHES);
     }
   };
 

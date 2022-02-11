@@ -5,6 +5,7 @@ import { AppBar, Button, MenuItem, Select } from "@mui/material";
 import AddRecord from "../AddRecord/AddRecord";
 import TableRecords from "../TableRecords/TableRecords";
 import { GET_ALL_RECORDS } from "../../request/recordRequest";
+import { HEADER_NAME, DIRECTION } from "../../constants/constantsInfo";
 import FilterComponent from "../FilterComponent/FilterComponent";
 import SnackbarComponent from "../SnackbarComponent/SnackbarComponent";
 import logo from "../../img/logo.png";
@@ -66,29 +67,6 @@ const Main = () => {
     navigation("/login");
   };
 
-  const doctors = [
-    "Кириллов Алан Валерьевич",
-    "Комиссаров Гаянэ Валерьянович",
-    "Крылов Родион Оскарович",
-    "Волкова Нина Аристарховна",
-    "Громова Августа Семеновна",
-    "Ковалёв Лукьян Аристархович",
-    "Волкова Алина Аристарховна",
-  ];
-
-  const headerNames = [
-    { key: "_id", text: "" },
-    { key: "patient", text: "Имя" },
-    { key: "doctor", text: "Врач" },
-    { key: "date", text: "Дата" },
-    { key: "symptoms", text: "Жалобы" },
-  ];
-
-  const direction = [
-    { direction: "asc", text: "По возрастанию" },
-    { direction: "desc", text: "По убыванию" },
-  ];
-
   const { message, status, errorToken } = snackbar;
   const { sortClassName, directValue } = directionCheck;
 
@@ -148,7 +126,7 @@ const Main = () => {
               }
             }}
           >
-            {headerNames.map((item, index) => {
+            {HEADER_NAME.map((item, index) => {
               return (
                 <MenuItem
                   className="input-sort input-sort-height"
@@ -176,7 +154,7 @@ const Main = () => {
               sortAllRecords(sortValue, event.target.value);
             }}
           >
-            {direction.map((item, index) => {
+            {DIRECTION.map((item, index) => {
               return (
                 <MenuItem
                   className="input-sort input-sort-height"
@@ -199,7 +177,6 @@ const Main = () => {
           allRecords={allRecords}
           setAllRecords={setAllRecords}
           snackbarParams={snackbarParams}
-          doctors={doctors}
         />
       ) : (
         <></>

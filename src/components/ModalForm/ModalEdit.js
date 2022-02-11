@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { fromUnixTime } from "date-fns";
 import moment from "moment";
 import {
   Box,
@@ -10,7 +10,10 @@ import {
   Select,
   Modal,
 } from "@mui/material";
+import { DOCTORS } from "../../constants/constantsInfo";
+import { useMutation } from "@apollo/client";
 import DateInput from "../Main/DateInput";
+import { CHANGE_RECORD } from "../../request/recordRequest";
 import "./ModalForm.scss";
 
 const ModalEdit = ({
@@ -19,12 +22,11 @@ const ModalEdit = ({
   recordEdit,
   setAllRecords,
   snackbarParams,
-  doctors,
   setRecordEdit,
 }) => {
-  const [checkDate, setCheckDate] = useState(false);
+  const [changeRecord, { data }] = useMutation(CHANGE_RECORD);
 
-  const token = localStorage.getItem("token");
+  const [checkDate, setCheckDate] = useState(false);
 
   const handleChange = (nameKey, event) => {
     setCheckDate(false);
@@ -34,74 +36,70 @@ const ModalEdit = ({
     });
   };
 
+  delete recordEdit.__typename;
+
+  useEffect(() => {
+    if (data) {
+      setAllRecords([...data.changeRecord]);
+      if (checkDate) {
+        snackbarParams(
+          "Запись изменина! Но дата заменена на текущую!",
+          "warning",
+          false
+        );
+      } else {
+        snackbarParams("УДАЧА! Запись изменина!", "success", false);
+      }
+      setCheckDate(false);
+      openModal(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
+  if (new Date(recordEdit.date).toString() === "Invalid Date") {
+    recordEdit.date = new Date(fromUnixTime(recordEdit.date / 1000));
+  }
+
   const { patient, doctor, date, symptoms } = recordEdit;
 
+  const checkNewRecord = () => {
+    if (patient === "") {
+      throw new Error("Поле имени пацента пустое!");
+    }
+    if (doctor === "") {
+      throw new Error("Не выбран врач!");
+    }
+    if (symptoms === "") {
+      throw new Error("Не указаны жалобы!");
+    }
+    if (
+      !(
+        (new Date(date) >= new Date("01-01-2021") &&
+          new Date(date) <= new Date("12-31-2022")) ||
+        checkDate
+      )
+    ) {
+      setCheckDate(true);
+      throw new Error(
+        "Не верная дата! Дата должна быть в диапазоне от 01/01/2021 до 31/12/2022"
+      );
+    }
+  };
+
   const editRecord = async () => {
-    recordEdit.date = moment(date).format("YYYY-MM-DD");
-    if (patient !== "") {
-      if (doctor !== "") {
-        if (symptoms !== "") {
-          if (
-            (new Date(date) >= new Date("01-01-2021") &&
-              new Date(date) <= new Date("12-31-2022")) ||
-            checkDate
-          ) {
-            if (checkDate) {
-              recordEdit.date = moment().format("YYYY-MM-DD");
-            }
-            await axios
-              .patch(
-                "http://localhost:8000/record/changeRecord",
-                { ...recordEdit },
-                {
-                  headers: { authorization: token },
-                }
-              )
-              .then((res) => {
-                setAllRecords(res.data.data);
-                if (checkDate) {
-                  snackbarParams(
-                    "Запись изменина! Но дата заменена на текущую!",
-                    "warning",
-                    false
-                  );
-                } else {
-                  snackbarParams("УДАЧА! Запись изменина!", "success", false);
-                }
-                setCheckDate(false);
-                openModal(false);
-              })
-              .catch((err) => {
-                if (err.response.status === 401) {
-                  snackbarParams("Ошибка авторизации!!!", "error", true);
-                  setCheckDate(false);
-                  openModal(false);
-                } else {
-                  snackbarParams(
-                    "Ошибка редактирования записи! Запись не изменина!",
-                    "warning",
-                    false
-                  );
-                  setCheckDate(false);
-                  openModal(false);
-                }
-              });
-          } else {
-            setCheckDate(true);
-            snackbarParams(
-              "Не верная дата! Дата должна быть в диапазоне от 01/01/2021 до 31/12/2022",
-              "warning",
-              false
-            );
-          }
-        } else {
-          snackbarParams("Не указаны жалобы!", "warning", false);
-        }
-      } else {
-        snackbarParams("Не выбран врач!", "warning", false);
+    try {
+      recordEdit.date = moment(date).format("YYYY-MM-DD");
+      checkNewRecord();
+      if (checkDate) {
+        recordEdit.date = moment().format("YYYY-MM-DD");
       }
-    } else {
-      snackbarParams("Поле имени пацента пустое!", "warning", false);
+      await changeRecord({ variables: { input: { ...recordEdit } } });
+    } catch (err) {
+      if (err.message === "Неправильный/Устаревший токен") {
+        snackbarParams(err.message, "error", true);
+      } else {
+        snackbarParams(err.message, "warning", false);
+      }
     }
   };
 
@@ -138,7 +136,7 @@ const ModalEdit = ({
                 value={doctor}
                 onChange={(event) => handleChange("doctor", event.target.value)}
               >
-                {doctors.map((item, index) => {
+                {DOCTORS.map((item, index) => {
                   return (
                     <MenuItem className="input-mui" key={index} value={item}>
                       {item}

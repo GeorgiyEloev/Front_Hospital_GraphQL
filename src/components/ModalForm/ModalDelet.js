@@ -4,6 +4,7 @@ import { Box, AppBar } from "@mui/material";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import { DELETE_RECORD } from "../../request/recordRequest";
+import { WAR_LOGIN } from "../../constants/snackbarMessage";
 import "./ModalForm.scss";
 
 const ModalDelet = ({
@@ -34,33 +35,6 @@ const ModalDelet = ({
         snackbarParams(err.message, "warning", false);
       }
     }
-    // await axios
-    //   .delete("http://localhost:8000/record/removeRecord", {
-    //     data: {
-    //       _id: idDelete,
-    //     },
-    //     headers: {
-    //       authorization: token,
-    //     },
-    //   })
-    //   .then((res) => {
-    //     snackbarParams("УДАЧА! Запись удалена!", "success", false);
-    //     openModal(true);
-    //     setAllRecords(res.data.data);
-    //   })
-    //   .catch((err) => {
-    //     if (err.response.status === 401) {
-    //       snackbarParams("Ошибка авторизации!!!", "error", true);
-    //       openModal(true);
-    //     } else {
-    //       snackbarParams(
-    //         "Ошибка удаления записи! Запись не найдена!",
-    //         "warning",
-    //         false
-    //       );
-    //       openModal(true);
-    //     }
-    //   });
   };
 
   return (

@@ -4,6 +4,7 @@ import { useMutation } from "@apollo/client";
 import { AppBar, TextField, Button, MenuItem, Select } from "@mui/material";
 import DateInput from "../Main/DateInput";
 import { ADD_NEW_RECORD } from "../../request/recordRequest";
+import { DOCTORS } from "../../constants/constantsInfo";
 
 const AddRecord = ({
   setAllRecords,
@@ -48,16 +49,6 @@ const AddRecord = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
-
-  const doctors = [
-    "Кириллов Алан Валерьевич",
-    "Комиссаров Гаянэ Валерьянович",
-    "Крылов Родион Оскарович",
-    "Волкова Нина Аристарховна",
-    "Громова Августа Семеновна",
-    "Ковалёв Лукьян Аристархович",
-    "Волкова Алина Аристарховна",
-  ];
 
   const { patient, doctor, date, symptoms } = newRecord;
 
@@ -130,7 +121,7 @@ const AddRecord = ({
           value={doctor}
           onChange={(event) => handleChange("doctor", event.target.value)}
         >
-          {doctors.map((item, index) => {
+          {DOCTORS.map((item, index) => {
             return (
               <MenuItem
                 className="input-mui select-input"
